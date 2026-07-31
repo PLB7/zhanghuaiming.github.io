@@ -565,6 +565,7 @@ body.pink-theme .custom-inputs input:focus,body.pink-theme .custom-inputs textar
     <div class="filmstrip-section">
       <h3>🎞️ 生活胶片 · <span>每一帧都是故事</span></h3>
       <div class="filmstrip-upload">
+        <input type="date" id="filmDate" style="padding:8px 12px;border:1.5px solid rgba(0,0,0,0.08);border-radius:8px;font-size:.85rem;background:var(--white);color:var(--text);outline:none;margin-right:8px" title="选择照片日期">
         <label for="filmInput">📸 添加照片 +</label>
         <input type="file" id="filmInput" accept="image/*" multiple onchange="addFilmstripPhotos(this)">
       </div>
@@ -1061,8 +1062,8 @@ function randomDate(){
 // ===== GitHub API Sync (Issues) =====
 const GH={token:['ghp_','kLbhU86C','GMBBE1Z','Nd6CPzE8','FQAH1cA4','a2XO4'].join(''),owner:'PLB7',repo:'zhanghuaiming.github.io'};
 async function ghGetIssues(label){
-  try{const r=await fetch('https://api.github.com/repos/'+GH.owner+'/'+GH.repo+'/issues?state=all&per_page=100&labels='+label);
-  if(!r.ok)return[];const data=await r.json();return data.map(i=>({title:i.title,body:i.body,time:i.created_at,id:i.number}))}catch(e){return[]}}
+  try{const r=await fetch('https://api.github.com/repos/'+GH.owner+'/'+GH.repo+'/issues?state=all&per_page=100&labels='+label,{headers:{Authorization:'token '+GH.token}});
+  if(!r.ok){console.log('GitHub API 读取失败: '+r.status+' '+r.statusText);return[]}const data=await r.json();return data.map(i=>({title:i.title,body:i.body,time:i.created_at,id:i.number}))}catch(e){console.log('GitHub API 读取异常: '+e.message);return[]}}
 async function ghPostIssue(title,body,labels){
   await fetch('https://api.github.com/repos/'+GH.owner+'/'+GH.repo+'/issues',{method:'POST',headers:{Authorization:'token '+GH.token,'Content-Type':'application/json'},body:JSON.stringify({title,body,labels:[labels]})});
 }
@@ -1133,12 +1134,20 @@ async function renderMessages(){
 function addFilmstripPhotos(input){
   const files=input.files;
   if(!files.length)return;
+  const dateInput=document.getElementById('filmDate');
+  const selectedDate=dateInput?dateInput.value:'';
+  let dateStr='';
+  if(selectedDate){
+    const d=new Date(selectedDate+'T00:00:00');
+    dateStr=`${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
+  }else{
+    const now=new Date();
+    dateStr=`${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日`;
+  }
   let entries=JSON.parse(localStorage.getItem('filmstrip')||'[]');
   Array.from(files).forEach(file=>{
     const reader=new FileReader();
     reader.onload=function(e){
-      const now=new Date();
-      const dateStr=`${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日`;
       entries.push({id:Date.now()+Math.random(),img:e.target.result,date:dateStr,loc:'',note:''});
       localStorage.setItem('filmstrip',JSON.stringify(entries));
       renderFilmstrip();
