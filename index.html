@@ -1074,18 +1074,21 @@ function addJournal(){
   const loc=document.getElementById('journalLoc').value.trim();
   const text=document.getElementById('journalText').value.trim();
   if(!date||!text){alert('请填写日期和内容～');return}
+  const btn=event.target;if(btn)btn.textContent='⏳ 提交中...';
   ghPostIssue(date,JSON.stringify({date,loc,text}),'journal').then(()=>{
     document.getElementById('journalLoc').value='';document.getElementById('journalText').value='';
+    if(btn)btn.textContent='📝 记录今天';
     renderJournal();
-  });
+  }).catch(e=>{if(btn)btn.textContent='📝 记录今天';alert('提交失败: '+e.message)});
 }
 async function renderJournal(){
   const container=document.getElementById('journalTimeline');
   const empty=document.getElementById('journalEmpty');
-  const issues=await ghGetIssues('journal');
-  if(!issues.length){if(empty)empty.style.display='block';container.querySelectorAll('.journal-entry').forEach(e=>e.remove());return}
-  if(empty)empty.style.display='none';
+  let issues;
+  try{issues=await ghGetIssues('journal')}catch(e){issues=[]}
+  if(!issues.length){if(empty){empty.style.display='block';empty.innerHTML='<div class="icon">📖</div><p>还没有生活记录，开始写下第一篇吧！</p><p style="font-size:.7rem;color:var(--text-muted);margin-top:8px">(如果刷新后仍然为空，请按 F12 查看控制台错误)</p>'}}
   container.querySelectorAll('.journal-entry').forEach(e=>e.remove());
+  if(empty)empty.style.display=issues.length?'none':'block';
   issues.forEach(e=>{
     let parsed={date:e.title,loc:'',text:e.body};
     try{parsed=JSON.parse(e.body||'{}');parsed.date=parsed.date||e.title}catch(err){}
@@ -1117,7 +1120,8 @@ async function submitMessage(){
 async function renderMessages(){
   const container=document.getElementById('msgList');
   if(!container)return;
-  const issues=await ghGetIssues('message');
+  let issues;
+  try{issues=await ghGetIssues('message')}catch(e){issues=[]}
   var r='';
   const colors=['#FFF8DC','#FFE4E1','#E8F5E9','#E3F2FD','#FFF3E0','#F3E5F5','#FFFDE7','#E0F7FA','#FBE9E7','#E8EAF6'];
   for(var i=0;i<issues.length;i++){
@@ -1127,7 +1131,7 @@ async function renderMessages(){
     const name=m.title.replace('💬 ','')||data.name;
     r+='<div class="sticky-note" style="background:'+colors[i%colors.length]+'"><div class="sticky-pin"></div><div class="sticky-name">'+name+'</div><div class="sticky-text">'+data.text+'</div><div class="sticky-time">'+data.time+'</div></div>';
   }
-  container.innerHTML=r;
+  container.innerHTML=r||'<div style="text-align:center;color:var(--text-muted);font-size:.85rem;padding:20px">💬 还没有留言，来做第一个吧！</div>';
 }
 
 // ===== Filmstrip =====
@@ -1534,6 +1538,12 @@ setInterval(()=>{
 // ===== Adjust date layout =====
 // Make whisper always visible
 document.addEventListener('DOMContentLoaded',()=>{
+  // Load journal, messages and filmstrip
+  const jd=document.getElementById('journalDate');
+  if(jd){const d=new Date();jd.value=d.toISOString().split('T')[0];}
+  renderJournal();
+  renderMessages();
+  renderFilmstrip();
   // Add date carousel to date module
   const datePlan=document.querySelector('.date-plan');
   if(datePlan&&!document.getElementById('dateCarousel')){
@@ -1547,6 +1557,8 @@ document.addEventListener('DOMContentLoaded',()=>{
     const skills=document.getElementById('skills');
     if(skills){const btn=document.createElement('button');btn.id='fortuneBtn';btn.className='fortune-btn';btn.textContent='🎯 今日代码运势';btn.onclick=drawFortune;btn.style.marginTop='32px';const fr=document.createElement('div');fr.id='fortuneResult';fr.className='fortune-result';skills.querySelector('.container')?.appendChild(btn);skills.querySelector('.container')?.appendChild(fr);}
   }
+  // Auto refresh every 30s for real-time sync
+  setInterval(()=>{renderJournal();renderMessages();},30000);
 });
 
 // Check initial date
