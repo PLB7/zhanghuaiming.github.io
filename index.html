@@ -1134,7 +1134,36 @@ async function renderMessages(){
   container.innerHTML=r||'<div style="text-align:center;color:var(--text-muted);font-size:.85rem;padding:20px">💬 还没有留言，来做第一个吧！</div>';
 }
 
-// ===== Filmstrip =====
+// ===== Filmstrip (GitHub Synced) =====
+async function ghUploadImage(file,dateStr){
+  const compressed=await new Promise(resolve=>{
+    const reader=new FileReader();
+    reader.onload=function(ev){
+      const img=new Image();
+      img.onload=function(){
+        const MAX=800;
+        let w=img.width,h=img.height;
+        if(w>MAX){h=Math.round(h*MAX/w);w=MAX}
+        const canvas=document.createElement('canvas');
+        canvas.width=w;canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        resolve(canvas.toDataURL('image/jpeg',0.7).split(',')[1]);
+      };
+      img.src=ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+  const filename='photo_'+Date.now()+'.jpg';
+  const path='photos/'+filename;
+  let sha='';
+  try{const r=await fetch('https://api.github.com/repos/'+GH.owner+'/'+GH.repo+'/contents/'+path,{headers:{Authorization:'token '+GH.token}});
+  if(r.ok){const d=await r.json();sha=d.sha}}catch(e){}
+  const body={message:'Add photo '+filename,content:compressed,branch:GH.branch};
+  if(sha)body.sha=sha;
+  const r=await fetch('https://api.github.com/repos/'+GH.owner+'/'+GH.repo+'/contents/'+path,{method:'PUT',headers:{Authorization:'token '+GH.token,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!r.ok)throw new Error('图片上传失败');
+  return 'https://raw.githubusercontent.com/'+GH.owner+'/'+GH.repo+'/main/'+path;
+}
 function addFilmstripPhotos(input){
   const files=input.files;
   if(!files.length)return;
@@ -1148,40 +1177,50 @@ function addFilmstripPhotos(input){
     const now=new Date();
     dateStr=`${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日`;
   }
-  let entries=JSON.parse(localStorage.getItem('filmstrip')||'[]');
-  Array.from(files).forEach(file=>{
-    const reader=new FileReader();
-    reader.onload=function(e){
-      entries.push({id:Date.now()+Math.random(),img:e.target.result,date:dateStr,loc:'',note:''});
-      localStorage.setItem('filmstrip',JSON.stringify(entries));
-      renderFilmstrip();
-    };
-    reader.readAsDataURL(file);
+  const label=document.querySelector('label[for="filmInput"]');
+  const origText=label?label.textContent:'';
+  if(label)label.textContent='⏳ 上传中...';
+  Array.from(files).forEach(async(file,i)=>{
+    try{
+      const imgUrl=await ghUploadImage(file,dateStr);
+      await ghPostIssue('📸 '+dateStr,JSON.stringify({date:dateStr,loc:'',note:'',img:imgUrl}),'photo');
+      if(i===files.length-1){if(label)label.textContent=origText;renderFilmstrip();}
+    }catch(e){if(label)label.textContent=origText;alert('照片上传失败: '+e.message)}
   });
   input.value='';
 }
-function renderFilmstrip(){
+async function renderFilmstrip(){
   const track=document.getElementById('filmstripTrack');
   const empty=document.getElementById('filmstripEmpty');
-  let entries=JSON.parse(localStorage.getItem('filmstrip')||'[]');
-  if(!entries.length){if(empty)empty.style.display='block';track.querySelectorAll('.filmstrip-frame').forEach(e=>e.remove());return}
+  let issues=[];
+  try{issues=await ghGetIssues('photo')}catch(e){issues=[]}
+  if(!issues.length){if(empty)empty.style.display='block';track.querySelectorAll('.filmstrip-frame').forEach(e=>e.remove());return}
   if(empty)empty.style.display='none';
   track.querySelectorAll('.filmstrip-frame').forEach(e=>e.remove());
-  entries.forEach(e=>{
+  issues.forEach(e=>{
+    let p={date:e.title,loc:'',note:'',img:''};
+    try{p=JSON.parse(e.body||'{}');p.date=p.date||e.title}catch(err){}
     const f=document.createElement('div');f.className='filmstrip-frame';
-    f.innerHTML=`<img class="frame-img" src="${e.img}" alt=""><div class="frame-info"><div class="frame-date">📅 ${e.date}</div>${e.loc?`<div class="frame-loc">📍 ${e.loc}</div>`:''}${e.note?`<div class="frame-note">${e.note}</div>`:''}<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap"><input class="frame-edit-loc" style="flex:1;min-width:80px;padding:4px 8px;border:1px solid rgba(0,0,0,0.06);border-radius:4px;font-size:.7rem;background:var(--cream);color:var(--text-light);outline:none" placeholder="📍 地点" value="${e.loc||''}"><input class="frame-edit-note" style="flex:2;min-width:120px;padding:4px 8px;border:1px solid rgba(0,0,0,0.06);border-radius:4px;font-size:.7rem;background:var(--cream);color:var(--text-light);outline:none" placeholder="💌 写句话" value="${e.note||''}"><button class="frame-save" style="padding:4px 10px;border:none;border-radius:4px;background:var(--gold-gradient);color:#fff;font-size:.65rem;cursor:pointer" data-id="${e.id}">✓</button></div></div>`;
+    f.innerHTML=`<img class="frame-img" src="${p.img}" alt="" onerror="this.style.display='none'"><div class="frame-info"><div class="frame-date">📅 ${p.date}</div>${p.loc?`<div class="frame-loc">📍 ${p.loc}</div>`:''}${p.note?`<div class="frame-note">${p.note}</div>`:''}<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap"><input class="frame-edit-loc" style="flex:1;min-width:80px;padding:4px 8px;border:1px solid rgba(0,0,0,0.06);border-radius:4px;font-size:.7rem;background:var(--cream);color:var(--text-light);outline:none" placeholder="📍 地点" value="${p.loc||''}"><input class="frame-edit-note" style="flex:2;min-width:120px;padding:4px 8px;border:1px solid rgba(0,0,0,0.06);border-radius:4px;font-size:.7rem;background:var(--cream);color:var(--text-light);outline:none" placeholder="💌 写句话" value="${p.note||''}"><button class="frame-save" style="padding:4px 10px;border:none;border-radius:4px;background:var(--gold-gradient);color:#fff;font-size:.65rem;cursor:pointer" data-id="${e.id}">✓</button></div></div>`;
     track.appendChild(f);
   });
   // Save edits
   track.querySelectorAll('.frame-save').forEach(btn=>{
-    btn.addEventListener('click',function(){
+    btn.addEventListener('click',async function(){
       const id=parseFloat(this.dataset.id);
       const frame=this.closest('.filmstrip-frame');
       const loc=frame.querySelector('.frame-edit-loc').value.trim();
       const note=frame.querySelector('.frame-edit-note').value.trim();
-      let entries=JSON.parse(localStorage.getItem('filmstrip')||'[]');
-      const idx=entries.findIndex(e=>e.id===id);
-      if(idx>-1){entries[idx].loc=loc;entries[idx].note=note;localStorage.setItem('filmstrip',JSON.stringify(entries));renderFilmstrip();}
+      let issues=[];
+      try{issues=await ghGetIssues('photo')}catch(e){}
+      const idx=issues.findIndex(e=>e.id===id);
+      if(idx>-1){
+        let p={};
+        try{p=JSON.parse(issues[idx].body||'{}')}catch(e){}
+        p.loc=loc;p.note=note;
+        await ghPostIssue('📸 '+(p.date||issues[idx].title),JSON.stringify(p),'photo');
+        renderFilmstrip();
+      }
     });
   });
 }
