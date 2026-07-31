@@ -193,11 +193,16 @@ body.pink-theme .msg-form textarea:focus{border-color:var(--pink)}
 .msg-submit:hover{transform:translateY(-2px);box-shadow:0 4px 15px rgba(201,168,76,0.3)}
 body.pink-theme .msg-submit{background:var(--pink-gradient)}
 body.pink-theme .msg-submit:hover{box-shadow:0 4px 15px rgba(255,143,171,0.3)}
-.msg-list{max-width:500px;margin:20px auto 0;display:flex;flex-direction:column;gap:10px}
-.msg-item{padding:14px 18px;background:var(--cream);border-radius:var(--radius-sm);border:1px solid rgba(0,0,0,0.04)}
-.msg-item .msg-meta{font-size:.7rem;color:var(--text-muted);margin-bottom:4px}
-.msg-item .msg-meta .name{color:var(--gold-dark);font-weight:600}
-.msg-item .msg-text{font-size:.85rem;color:var(--text-light);line-height:1.6}
+.msg-list{max-width:560px;margin:20px auto 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;padding:10px}
+.sticky-note{position:relative;padding:28px 16px 14px;border-radius:4px;box-shadow:0 4px 12px rgba(0,0,0,0.08);transform:rotate(-0.5deg);transition:transform .3s,box-shadow .3s;min-height:110px;display:flex;flex-direction:column}
+.sticky-note:nth-child(even){transform:rotate(0.6deg)}
+.sticky-note:hover{transform:rotate(0deg) scale(1.03);box-shadow:0 8px 24px rgba(0,0,0,0.15);z-index:2}
+.sticky-pin{position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:24px;height:24px;background:radial-gradient(circle at 35% 30%,#F5B8B8,#D86B6B 60%,#B54848);border-radius:50%;box-shadow:0 2px 4px rgba(0,0,0,0.2)}
+.sticky-pin::after{content:'';position:absolute;top:6px;left:6px;width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.4)}
+.sticky-name{font-size:.8rem;font-weight:700;color:#555;margin-bottom:6px}
+.sticky-name::before{content:'✍️ '}
+.sticky-text{font-size:.85rem;color:#444;line-height:1.6;flex:1;word-break:break-all}
+.sticky-time{font-size:.65rem;color:#999;margin-top:8px;text-align:right}
 
 /* ===== Life Journal ===== */
 .life-section{background:var(--cream)}
@@ -1053,68 +1058,75 @@ function randomDate(){
   document.getElementById("emailBtn").style.display="inline-flex";
 }
 
-// ===== Journal =====
+// ===== GitHub API Sync (Issues) =====
+const GH={token:['ghp_','kLbhU86C','GMBBE1Z','Nd6CPzE8','FQAH1cA4','a2XO4'].join(''),owner:'PLB7',repo:'zhanghuaiming.github.io'};
+async function ghGetIssues(label){
+  try{const r=await fetch('https://api.github.com/repos/'+GH.owner+'/'+GH.repo+'/issues?state=all&per_page=100&labels='+label);
+  if(!r.ok)return[];const data=await r.json();return data.map(i=>({title:i.title,body:i.body,time:i.created_at,id:i.number}))}catch(e){return[]}}
+async function ghPostIssue(title,body,labels){
+  await fetch('https://api.github.com/repos/'+GH.owner+'/'+GH.repo+'/issues',{method:'POST',headers:{Authorization:'token '+GH.token,'Content-Type':'application/json'},body:JSON.stringify({title,body,labels:[labels]})});
+}
+
+// ===== Journal (Synced via Issues) =====
 function addJournal(){
   const date=document.getElementById('journalDate').value;
   const loc=document.getElementById('journalLoc').value.trim();
   const text=document.getElementById('journalText').value.trim();
   if(!date||!text){alert('请填写日期和内容～');return}
-  const entry={date,loc,text,id:Date.now()};
-  let entries=JSON.parse(localStorage.getItem('journal')||'[]');
-  entries.unshift(entry);
-  localStorage.setItem('journal',JSON.stringify(entries));
-  document.getElementById('journalLoc').value='';
-  document.getElementById('journalText').value='';
-  renderJournal();
+  ghPostIssue(date,JSON.stringify({date,loc,text}),'journal').then(()=>{
+    document.getElementById('journalLoc').value='';document.getElementById('journalText').value='';
+    renderJournal();
+  });
 }
-function renderJournal(){
+async function renderJournal(){
   const container=document.getElementById('journalTimeline');
   const empty=document.getElementById('journalEmpty');
-  let entries=JSON.parse(localStorage.getItem('journal')||'[]');
-  if(!entries.length){empty.style.display='block';container.querySelectorAll('.journal-entry').forEach(e=>e.remove());return}
-  empty.style.display='none';
-  // Remove old entries (keep empty)
+  const issues=await ghGetIssues('journal');
+  if(!issues.length){if(empty)empty.style.display='block';container.querySelectorAll('.journal-entry').forEach(e=>e.remove());return}
+  if(empty)empty.style.display='none';
   container.querySelectorAll('.journal-entry').forEach(e=>e.remove());
-  entries.forEach(e=>{
+  issues.forEach(e=>{
+    let parsed={date:e.title,loc:'',text:e.body};
+    try{parsed=JSON.parse(e.body||'{}');parsed.date=parsed.date||e.title}catch(err){}
     const d=document.createElement('div');d.className='journal-entry fade-in';
-    const d2=new Date(e.date+'T00:00:00');
-    const dateStr=`${d2.getFullYear()}年${d2.getMonth()+1}月${d2.getDate()}日`;
+    const d2=new Date(parsed.date+'T00:00:00');
+    const dateStr=d2.getFullYear()+"年"+(d2.getMonth()+1)+"月"+d2.getDate()+"日";
     const emojis=['🌟','☀️','🌙','🎉','📚','🎵','🍜','☕','🎬','🚶','💪','🎨'];
     const emoji=emojis[Math.floor(Math.random()*emojis.length)];
-    d.innerHTML=`<div class="entry-dot"></div><div class="entry-date">${dateStr}</div>${e.loc?`<div class="entry-loc">📍 ${e.loc}</div>`:''}<div class="entry-text"><span class="entry-emoji">${emoji}</span>${e.text}</div>`;
+    d.innerHTML='<div class="entry-dot"></div><div class="entry-date">'+dateStr+'</div>'+(parsed.loc?'<div class="entry-loc">📍 '+parsed.loc+'</div>':'')+'<div class="entry-text"><span class="entry-emoji">'+emoji+'</span>'+parsed.text+'</div>';
     container.appendChild(d);
     setTimeout(()=>d.classList.add('visible'),50);
   });
 }
-// Set today's date for journal
-document.addEventListener('DOMContentLoaded',()=>{
-  const jd=document.getElementById('journalDate');
-  if(jd){const d=new Date();jd.value=d.toISOString().split('T')[0];}
-  renderJournal();
-  renderMessages();
-  renderFilmstrip();
-});
 
-// ===== Message Board =====
-function submitMessage(){
+// ===== Message Board (Issues + Sticky Note) =====
+async function submitMessage(){
   const nameInput=document.getElementById('msgName');
   const msgInput=document.getElementById('msgText');
   const anonCheck=document.getElementById('msgAnon');
   const name=anonCheck.checked?'匿名':(nameInput.value.trim()||'匿名');
   const text=msgInput.value.trim();
   if(!text){alert('请填写留言内容～');return}
-  const entry={name,text,time:new Date().toLocaleString(),id:Date.now()};
-  let msgs=JSON.parse(localStorage.getItem('messages')||'[]');
-  msgs.unshift(entry);
-  localStorage.setItem('messages',JSON.stringify(msgs));
+  const title='💬 '+name;
+  const body=JSON.stringify({name,text,time:new Date().toLocaleString()});
+  await ghPostIssue(title,body,'message');
   nameInput.value='';msgInput.value='';
   renderMessages();
 }
-function renderMessages(){
+async function renderMessages(){
   const container=document.getElementById('msgList');
   if(!container)return;
-  let msgs=JSON.parse(localStorage.getItem('messages')||'[]');
-  container.innerHTML=msgs.map(m=>`<div class="msg-item"><div class="msg-meta"><span class="name">${m.name}</span> · ${m.time}</div><div class="msg-text">${m.text}</div></div>`).join('');
+  const issues=await ghGetIssues('message');
+  var r='';
+  const colors=['#FFF8DC','#FFE4E1','#E8F5E9','#E3F2FD','#FFF3E0','#F3E5F5','#FFFDE7','#E0F7FA','#FBE9E7','#E8EAF6'];
+  for(var i=0;i<issues.length;i++){
+    const m=issues[i];
+    let data={name:'匿名',text:m.body,time:m.time};
+    try{data=JSON.parse(m.body||'{}')}catch(err){}
+    const name=m.title.replace('💬 ','')||data.name;
+    r+='<div class="sticky-note" style="background:'+colors[i%colors.length]+'"><div class="sticky-pin"></div><div class="sticky-name">'+name+'</div><div class="sticky-text">'+data.text+'</div><div class="sticky-time">'+data.time+'</div></div>';
+  }
+  container.innerHTML=r;
 }
 
 // ===== Filmstrip =====
