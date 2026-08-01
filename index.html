@@ -251,6 +251,27 @@ section.life-group{background:var(--cream)!important}
 .filmstrip-empty{text-align:center;padding:40px;color:var(--text-muted)}
 .filmstrip-empty .icon{font-size:3rem;margin-bottom:8px}
 .falling-apple{transition:top 3s linear!important;z-index:10000!important}
+.mini-random{background:none;border:none;font-size:1rem;cursor:pointer;margin-left:6px;vertical-align:middle;transition:transform .2s;padding:0}
+.mini-random:hover{transform:rotate(180deg) scale(1.2)}
+/* Reply */
+.reply-btn{background:none;border:none;color:var(--gold-dark);font-size:.7rem;cursor:pointer;padding:2px 6px;border-radius:4px;transition:var(--transition)}
+.reply-btn:hover{background:rgba(201,168,76,0.1)}
+.reply-box{margin-top:6px;display:none}
+.reply-box.show{display:block}
+.reply-box input{padding:6px 10px;border:1px solid rgba(0,0,0,0.08);border-radius:6px;font-size:.75rem;width:calc(100% - 60px);background:var(--white);color:var(--text);outline:none}
+.reply-box button{padding:6px 10px;border:none;border-radius:6px;background:var(--gold-gradient);color:#fff;font-size:.7rem;cursor:pointer;margin-left:4px}
+.reply-list{margin-top:6px;display:flex;flex-direction:column;gap:4px}
+.reply-item{font-size:.72rem;color:var(--text-light);background:rgba(0,0,0,0.03);padding:6px 10px;border-radius:6px}
+.reply-item .reply-name{color:var(--gold-dark);font-weight:600}
+.sticky-note{position:relative;padding:18px 16px 12px;border-radius:8px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.08);transform:rotate(-0.3deg);font-family:'Segoe Print','Comic Sans MS',cursive}
+.sticky-note:nth-child(even){transform:rotate(0.4deg)}
+.sticky-note:hover{transform:rotate(0deg) scale(1.01)}
+.sticky-pin{position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:14px;height:14px;background:#D9534F;border-radius:50%;box-shadow:0 2px 4px rgba(0,0,0,0.2)}
+.sticky-name{font-size:.78rem;font-weight:700;color:var(--dark);margin-bottom:4px}
+.sticky-text{font-size:.85rem;color:var(--text);line-height:1.6;word-break:break-all}
+.sticky-time{font-size:.65rem;color:var(--text-muted);margin-top:6px}
+.msg-list{max-width:600px;margin:20px auto 0;columns:2;column-gap:14px}
+@media(max-width:768px){.msg-list{columns:1}}
 
 /* ===== Loading Screen ===== */
 .loading-screen{position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;background:var(--cream);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px;transition:opacity .8s ease,visibility .8s;pointer-events:none}
@@ -713,17 +734,16 @@ body.pink-theme .custom-inputs input:focus,body.pink-theme .custom-inputs textar
     <div class="date-plan fade-in">
       <div class="date-fields">
         <div class="date-field">
-          <label>📅 选择日期</label>
+          <label>📅 选择日期 <button class="mini-random" onclick="randomDateField()" title="随机日期">🎲</button></label>
           <input type="date" id="datePicker" onchange="checkDate()">
         </div>
         <div class="date-field">
-          <label>📍 选择地点</label>
+          <label>📍 选择地点 <button class="mini-random" onclick="randomLocField()" title="随机地点">🎲</button></label>
           <select id="locationSelect">
             <option value="">— 请选择地点 —</option>
             <option value="公园">🌳 公园</option>
             <option value="电影院">🎬 电影院</option>
             <option value="游乐园">🎡 游乐园</option>
-            <option value="火锅店">🍲 火锅店</option>
             <option value="商场">🛍️ 商场</option>
             <option value="咖啡馆">☕ 咖啡馆</option>
             <option value="酒店">🏨 酒店</option>
@@ -736,11 +756,27 @@ body.pink-theme .custom-inputs input:focus,body.pink-theme .custom-inputs textar
             <option value="露营">🏕️ 露营</option>
             <option value="DIY手工坊">✂️ DIY手工坊</option>
             <option value="猫咖">🐱 猫咖</option>
+            <option value="水族馆">🐬 水族馆</option>
+            <option value="科技馆">🚀 科技馆</option>
+            <option value="天文馆">🔭 天文馆</option>
+            <option value="密室逃脱">🔐 密室逃脱</option>
+            <option value="剧本杀">🎭 剧本杀</option>
+            <option value="保龄球馆">🎳 保龄球馆</option>
+            <option value="射箭馆">🏹 射箭馆</option>
+            <option value="滑冰场">⛸️ 滑冰场</option>
+            <option value="蹦床公园">🤸 蹦床公园</option>
+            <option value="陶艺馆">🏺 陶艺馆</option>
+            <option value="烘焙店">🧁 烘焙店</option>
+            <option value="古镇">🏘️ 古镇</option>
+            <option value="山上看日出">⛰️ 山上看日出</option>
+            <option value="夜市">🏮 夜市</option>
+            <option value="音乐节">🎪 音乐节</option>
+            <option value="民宿">🏡 民宿</option>
             <option value="其他">✨ 其他</option>
           </select>
         </div>
         <div class="date-field">
-          <label>🎯 选择活动</label>
+          <label>🎯 选择活动 <button class="mini-random" onclick="randomEventField()" title="随机活动">🎲</button></label>
           <select id="eventSelect" onchange="toggleFood()">
             <option value="">— 请选择活动 —</option>
             <option value="吃饭">🍽️ 吃饭</option>
@@ -756,8 +792,23 @@ body.pink-theme .custom-inputs input:focus,body.pink-theme .custom-inputs textar
             <option value="玩桌游">🎲 玩桌游</option>
             <option value="泡温泉">♨️ 泡温泉</option>
             <option value="看日落">🌅 看日落</option>
+            <option value="密室逃脱">🔐 密室逃脱</option>
+            <option value="剧本杀">🎭 剧本杀</option>
+            <option value="逛市集">🎪 逛市集</option>
+            <option value="看展">🖼️ 看展</option>
+            <option value="放风筝">🪁 放风筝</option>
+            <option value="看星星">🌠 看星星</option>
+            <option value="玩Switch">🎮 玩Switch</option>
+            <option value="做甜品">🍰 做甜品</option>
+            <option value="钓鱼">🎣 钓鱼</option>
+            <option value="看演唱会">🎶 看演唱会</option>
             <option value="其他">✨ 其他</option>
           </select>
+          <!-- 电影名称输入 -->
+          <div class="food-options" id="movieOptions">
+            <div style="font-size:.8rem;color:var(--text-muted);font-weight:500">🎬 想看的电影？</div>
+            <input type="text" id="movieName" placeholder="输入电影名称…" style="margin-top:8px;width:100%;padding:10px 14px;border:1.5px solid rgba(0,0,0,0.08);border-radius:8px;font-size:.9rem;background:var(--white);color:var(--text);outline:none;font-family:inherit">
+          </div>
           <div class="food-options" id="foodOptions">
             <div style="font-size:.8rem;color:var(--text-muted);font-weight:500">想吃点什么？</div>
             <div class="food-grid">
@@ -773,7 +824,28 @@ body.pink-theme .custom-inputs input:focus,body.pink-theme .custom-inputs textar
               <span class="food-chip" onclick="selectFood(this)">🍗 炸鸡</span>
               <span class="food-chip" onclick="selectFood(this)">🥟 饺子</span>
               <span class="food-chip" onclick="selectFood(this)">🌮 墨西哥卷</span>
+              <span class="food-chip" onclick="selectFood(this)">🥘 广式早茶</span>
+              <span class="food-chip" onclick="selectFood(this)">🌶️ 川菜</span>
+              <span class="food-chip" onclick="selectFood(this)">🍛 日料</span>
+              <span class="food-chip" onclick="selectFood(this)">🍢 韩餐</span>
+              <span class="food-chip" onclick="selectFood(this)">🍝 西餐</span>
+              <span class="food-chip" onclick="selectFood(this)">🦞 海鲜</span>
+              <span class="food-chip" onclick="selectFood(this)">🍢 烧烤</span>
+              <span class="food-chip" onclick="selectFood(this)">🌶️ 麻辣烫</span>
+              <span class="food-chip" onclick="selectFood(this)">🐟 酸菜鱼</span>
+              <span class="food-chip" onclick="selectFood(this)">🦐 小龙虾</span>
+              <span class="food-chip" onclick="selectFood(this)">🍲 猪肚鸡</span>
+              <span class="food-chip" onclick="selectFood(this)">🥥 椰子鸡</span>
+              <span class="food-chip" onclick="selectFood(this)">🍜 螺蛳粉</span>
+              <span class="food-chip" onclick="selectFood(this)">🍜 米线</span>
+              <span class="food-chip" onclick="selectFood(this)">🍔 汉堡</span>
+              <span class="food-chip" onclick="selectFood(this)">🍧 冰淇淋</span>
+              <span class="food-chip" onclick="selectFood(this)">🍉 水果捞</span>
+              <span class="food-chip" onclick="selectFood(this)">🍵 广式糖水</span>
+              <span class="food-chip" onclick="selectFood(this)">🥧 肠粉</span>
+              <span class="food-chip" onclick="selectFood(this)">✨ 自定义</span>
             </div>
+            <input type="text" id="customFood" placeholder="其他想吃的…" style="margin-top:8px;width:100%;padding:10px 14px;border:1.5px solid rgba(0,0,0,0.08);border-radius:8px;font-size:.9rem;background:var(--white);color:var(--text);outline:none;display:none;font-family:inherit">
           </div>
         </div>
         <div class="date-field">
@@ -790,12 +862,11 @@ body.pink-theme .custom-inputs input:focus,body.pink-theme .custom-inputs textar
         </div>
       </div>
       <div class="whisper-box" style="max-height:none!important;opacity:1!important">
-        <textarea id="whisperText" placeholder="💌 写下你想对她说的悄悄话… 它会随邮件一起发送" 它会随邮件一起发送 💌" style="margin-top:8px"></textarea>
+        <textarea id="whisperText" placeholder="💌 写下你的悄悄话… 它会随约会申请一起发送" style="margin-top:8px"></textarea>
       </div>
       <div class="date-actions">
-        <button class="btn btn-primary" onclick="generateDate()">💫 生成约会方案</button>
-        <button class="btn btn-outline" onclick="sendEmail()" id="emailBtn" style="display:none">📧 发送邮件通知</button>
-        <button class="btn btn-outline" onclick="randomDate()">🎲 随机</button>
+        <button class="btn btn-primary" onclick="submitDateRequest()">💌 提交约会申请</button>
+        <button class="btn btn-outline" onclick="randomDate()">🎲 全部随机</button>
       </div>
       <div class="date-result" id="dateResult">
         <div style="color:var(--text-muted);font-size:.9rem">💕 选择日期、地点和活动，然后点击「生成约会方案」</div>
@@ -912,160 +983,143 @@ function stopHearts(){
 }
 
 // ===== Date Module =====
-const locations=['🌳 公园','🎬 电影院','🎡 游乐园','🍲 火锅店','🛍️ 商场','☕ 咖啡馆','🏨 酒店','🌊 海边','📚 图书馆','🌌 天台','🌵 植物园','🎨 美术馆','🎤 KTV','🏕️ 露营','✂️ DIY手工坊','🐱 猫咖'];
-const events=['🍽️ 吃饭','🎬 看电影','🚶 散步','🛍️ 逛街','✂️ 做手工','📸 拍照','🎤 唱歌','📖 看书','🏕️ 露营','🚴 骑行','🎲 玩桌游','♨️ 泡温泉','🌅 看日落'];
-const foods=['🍚 米饭','🍲 火锅','🥩 烤肉','🧋 奶茶','☕ 咖啡','🍰 甜品','🍜 面条','🍣 寿司','🍕 披萨','🍗 炸鸡','🥟 饺子','🌮 墨西哥卷'];
+const locations=['🌳 公园','🎬 电影院','🎡 游乐园','🛍️ 商场','☕ 咖啡馆','🏨 酒店','🌊 海边','📚 图书馆','🌌 天台','🌵 植物园','🎨 美术馆','🎤 KTV','🏕️ 露营','✂️ DIY手工坊','🐱 猫咖','🐬 水族馆','🚀 科技馆','🔭 天文馆','🔐 密室逃脱','🎭 剧本杀','🎳 保龄球馆','🏹 射箭馆','⛸️ 滑冰场','🤸 蹦床公园','🏺 陶艺馆','🧁 烘焙店','🏘️ 古镇','⛰️ 山上看日出','🏮 夜市','🎪 音乐节','🏡 民宿'];
+const events=['🍽️ 吃饭','🎬 看电影','🚶 散步','🛍️ 逛街','✂️ 做手工','📸 拍照','🎤 唱歌','📖 看书','🏕️ 露营','🚴 骑行','🎲 玩桌游','♨️ 泡温泉','🌅 看日落','🔐 密室逃脱','🎭 剧本杀','🎪 逛市集','🖼️ 看展','🪁 放风筝','🌠 看星星','🎮 玩Switch','🍰 做甜品','🎣 钓鱼','🎶 看演唱会'];
+const foods=['🍚 米饭','🍲 火锅','🥩 烤肉','🧋 奶茶','☕ 咖啡','🍰 甜品','🍜 面条','🍣 寿司','🍕 披萨','🍗 炸鸡','🥟 饺子','🌮 墨西哥卷','🥘 广式早茶','🌶️ 川菜','🍛 日料','🍢 韩餐','🍝 西餐','🦞 海鲜','🍢 烧烤','🌶️ 麻辣烫','🐟 酸菜鱼','🦐 小龙虾','🍲 猪肚鸡','🥥 椰子鸡','🍜 螺蛳粉','🍜 米线','🍔 汉堡','🍧 冰淇淋','🍉 水果捞','🍵 广式糖水','🥧 肠粉'];
 
 function toggleFood(){
-  const sel=document.getElementById('eventSelect'),food=document.getElementById('foodOptions');
+  const sel=document.getElementById('eventSelect'),food=document.getElementById('foodOptions'),movie=document.getElementById('movieOptions');
   food.classList.toggle('show',sel.value==='吃饭');
+  if(movie)movie.classList.toggle('show',sel.value==='看电影');
 }
 
 function selectFood(el){
+  const t=el.textContent.trim();
+  if(t==='✨ 自定义'){
+    document.querySelectorAll('.food-chip').forEach(c=>c.classList.remove('active'));
+    el.classList.add('active');
+    const cf=document.getElementById('customFood');
+    if(cf)cf.style.display='block';
+    return;
+  }
   document.querySelectorAll('.food-chip').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');
+  const cf=document.getElementById('customFood');
+  if(cf)cf.style.display='none';
 }
 
 function toggleCustom(){
   document.getElementById('customInputs').classList.toggle('show');
 }
 
-let lastPlan = { date:'', loc:'', evt:'', food:'', isCustom:false, cDate:'', cLoc:'', cEvt:'', cNote:'' };
+function getSelectedFood(){
+  const active=document.querySelector('.food-chip.active');
+  if(!active)return '';
+  if(active.textContent.trim()==='✨ 自定义'){
+    const cf=document.getElementById('customFood');
+    return cf&&cf.value.trim()?cf.value.trim():'自定义';
+  }
+  return active.textContent.trim();
+}
 
-function generateDate(){
+async function submitDateRequest(){
   const date=document.getElementById('datePicker').value;
   let loc=document.getElementById('locationSelect').value;
   let evt=document.getElementById('eventSelect').value;
-  let food=document.querySelector('.food-chip.active');
+  const foodText=getSelectedFood();
+  const movieName=document.getElementById('movieName')?document.getElementById('movieName').value.trim():'';
+  const whisper=document.getElementById('whisperText')?document.getElementById('whisperText').value.trim():'';
 
   const custom=document.getElementById('customInputs').classList.contains('show');
-  let cDate=document.getElementById('customDate').value;
-  let cLoc=document.getElementById('customLocation').value;
-  let cEvt=document.getElementById('customEvent').value;
-  let cNote=document.getElementById('customNote').value;
+  let cDate=document.getElementById('customDate').value.trim();
+  let cLoc=document.getElementById('customLocation').value.trim();
+  let cEvt=document.getElementById('customEvent').value.trim();
+  let cNote=document.getElementById('customNote').value.trim();
 
   const result=document.getElementById('dateResult');
-  const emailBtn=document.getElementById('emailBtn');
+  const btn=event.target;
 
+  let parts=[];
   if(custom&&(cDate||cLoc||cEvt||cNote)){
-    let parts=[];
-    if(cDate)parts.push(`�� ${cDate}`);
-    if(cLoc)parts.push(`📍 ${cLoc}`);
-    if(cEvt)parts.push(`🎯 ${cEvt}`);
-    if(food)parts.push(`🍽️ ${food.textContent.trim()}`);
-    if(cNote)parts.push(`💌 ${cNote}`);
-    result.innerHTML=`<div class="big">✨ 自定义约会方案 ✨</div><div class="sub">${parts.join(' · ')}</div>`;
-    lastPlan={isCustom:true,cDate,cLoc,cEvt,cNote,food:food?food.textContent.trim():''};
-    emailBtn.style.display='inline-flex';
-    return;
-  }
-
-  if(!loc||!evt){
-    result.innerHTML=`<div class="sub" style="color:var(--gold-dark)">⚠️ 请选择地点和活动哦～</div>`;
-    emailBtn.style.display='none';
-    return;
-  }
-
-  const locClean=loc.replace(/^[^\s]+\s/,'');
-  const evtClean=evt.replace(/^[^\s]+\s/,'');
-  let foodText= food ? food.textContent.trim() : '';
-
-  checkDate();
-
-  let displayDate=date;
-  if(date==='2025-12-20'){
-    displayDate='📅 2025年12月20日';
+    if(cDate)parts.push('📅 '+cDate);
+    if(cLoc)parts.push('📍 '+cLoc);
+    if(cEvt)parts.push('🎯 '+cEvt);
   }else{
-    const d=new Date(date+'T00:00:00');
-    displayDate=`📅 ${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
+    if(!loc||!evt){result.innerHTML='<div class="sub" style="color:var(--gold-dark)">⚠️ 请选择地点和活动哦～</div>';return}
+    if(date){const d=new Date(date+'T00:00:00');parts.push('📅 '+d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日')}
+    parts.push('📍 '+loc);
+    parts.push('🎯 '+evt);
+    if(evt==='吃饭'&&foodText)parts.push('🍽️ '+foodText);
+    if(evt==='看电影'&&movieName)parts.push('🎬 电影：'+movieName);
   }
+  if(cNote)parts.push('💌 '+cNote);
+  if(whisper)parts.push('🤫 悄悄话：'+whisper);
 
-  let resultHtml=`<div class="big">💕 约会方案</div><div class="sub">${displayDate}</div><div class="sub">📍 ${locClean} · 🎯 ${evtClean}`;
-  if(foodText&&evt==='吃饭') resultHtml+=` · 🍽️ ${foodText}`;
-  resultHtml+=`</div>`;
-
-  result.innerHTML=resultHtml;
-  lastPlan={date,loc:locClean,evt:evtClean,food:foodText,isCustom:false};
-  emailBtn.style.display='inline-flex';
+  if(btn)btn.textContent='⏳ 提交中...';
+  try{
+    const title='💕 约会申请 '+(date||cDate||'');
+    await ghPostIssue(title,parts.join('\n'),'date');
+    checkDate();
+    result.innerHTML='<div class="big">✅ 申请已发送！</div><div class="sub">已经通知他了，等着被回复吧～</div>';
+    document.getElementById('whisperText').value='';
+  }catch(e){
+    result.innerHTML='<div class="sub" style="color:var(--gold-dark)">❌ 提交失败: '+e.message+'</div>';
+  }
+  if(btn)setTimeout(()=>btn.textContent='💌 提交约会申请',2000);
 }
 
-function sendEmail(){
-  const emailBtn=document.getElementById('emailBtn');
-  let subject='💕 约会方案 - 张槐槟';
-  let body='';
-
-  if(lastPlan.isCustom){
-    body+=`✨ 自定义约会方案 ✨\n`;
-    if(lastPlan.cDate) body+=`📅 日期：${lastPlan.cDate}\n`;
-    if(lastPlan.cLoc) body+=`📍 地点：${lastPlan.cLoc}\n`;
-    if(lastPlan.cEvt) body+=`🎯 活动：${lastPlan.cEvt}\n`;
-    if(lastPlan.food) body+=`🍽️ 美食：${lastPlan.food}\n`;
-    if(lastPlan.cNote) body+=`💌 备注：${lastPlan.cNote}\n`;
-  }else{
-    body+=`💕 约会方案 💕\n`;
-    body+=`📅 日期：${lastPlan.date}\n`;
-    body+=`📍 地点：${lastPlan.loc}\n`;
-    body+=`🎯 活动：${lastPlan.evt}\n`;
-    if(lastPlan.food) body+=`🍽️ 美食：${lastPlan.food}\n`;
-  }
-
-  // Add whisper if present
-  const whisper=document.getElementById('whisperText')?.value.trim();
-  if(whisper) body+=`\n\n💌 悄悄话：${whisper}`;
-  body+=`\n---\n由 ${document.title} 自动生成`;
-
-  const mailtoLink=`mailto:huaiming777@outlook.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  window.open(mailtoLink);
-
-  // Flash button feedback
-  emailBtn.textContent='✅ 已发送！';
-  setTimeout(()=>{emailBtn.textContent='📧 发送邮件通知';},2000);
+function randomDateField(){
+  const d=new Date();
+  d.setDate(d.getDate()+Math.floor(Math.random()*30)+1);
+  document.getElementById('datePicker').value=d.toISOString().split('T')[0];
+  checkDate();
+}
+function randomLocField(){
+  const loc=locations[Math.floor(Math.random()*locations.length)];
+  document.getElementById('locationSelect').value=loc.replace(/^[^\s]+\s/,'');
+}
+function randomEventField(){
+  const evt=events[Math.floor(Math.random()*events.length)];
+  document.getElementById('eventSelect').value=evt.replace(/^[^\s]+\s/,'');
+  toggleFood();
 }
 
 function randomDate(){
-  const loc=locations[Math.floor(Math.random()*locations.length)];
-  const evt=events[Math.floor(Math.random()*events.length)];
+  randomDateField();
+  randomLocField();
+  randomEventField();
   const food=foods[Math.floor(Math.random()*foods.length)];
-
-  // Set random date within next 30 days
-  const d=new Date();
-  d.setDate(d.getDate()+Math.floor(Math.random()*30)+1);
-  const dateStr=d.toISOString().split('T')[0];
-  document.getElementById('datePicker').value=dateStr;
-
-  document.getElementById('locationSelect').value=loc.replace(/^[^\s]+\s/,'');
-  document.getElementById('eventSelect').value=evt.replace(/^[^\s]+\s/,'');
-
-  toggleFood();
-  if(evt.startsWith('🍽️')){
+  if(document.getElementById('eventSelect').value==='吃饭'){
     document.getElementById('foodOptions').classList.add('show');
     document.querySelectorAll('.food-chip').forEach(c=>c.classList.remove('active'));
     document.querySelectorAll('.food-chip').forEach(c=>{
       if(c.textContent.trim()===food) c.classList.add('active');
     });
   }
-
   checkDate();
-
-  const locClean=loc.replace(/^[^\s]+\s/,'');
-  const evtClean=evt.replace(/^[^\s]+\s/,'');
-
   const result=document.getElementById('dateResult');
-  let html=`<div class="big">🎲 随机约会方案</div><div class="sub">📅 ${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日</div><div class="sub">📍 ${locClean} · 🎯 ${evtClean}`;
-  if(evt.startsWith('🍽️')) html+=` · 🍽️ ${food}`;
-  html+=`</div>`;
+  const d=new Date(document.getElementById('datePicker').value+'T00:00:00');
+  const locClean=document.getElementById('locationSelect').value;
+  const evtClean=document.getElementById('eventSelect').value;
+  let html='<div class="big">🎲 随机约会方案</div><div class="sub">📅 '+d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日</div><div class="sub">📍 '+locClean+' · 🎯 '+evtClean;
+  if(evtClean==='吃饭')html+=' · 🍽️ '+food;
+  html+='</div>';
   result.innerHTML=html;
-  lastPlan={date:dateStr,loc:locClean,evt:evtClean,food:food,isCustom:false};
-  document.getElementById("emailBtn").style.display="inline-flex";
 }
-
 // ===== GitHub API Sync (Issues) =====
 const GH={token:['ghp_','kLbhU86C','GMBBE1Z','Nd6CPzE8','FQAH1cA4','a2XO4'].join(''),owner:'PLB7',repo:'zhanghuaiming.github.io'};
 async function ghGetIssues(label){
   try{const r=await fetch('https://api.github.com/repos/'+GH.owner+'/'+GH.repo+'/issues?state=all&per_page=100&labels='+label,{headers:{Authorization:'token '+GH.token}});
   if(!r.ok){console.log('GitHub API 读取失败: '+r.status+' '+r.statusText);return[]}const data=await r.json();return data.map(i=>({title:i.title,body:i.body,time:i.created_at,id:i.number}))}catch(e){console.log('GitHub API 读取异常: '+e.message);return[]}}
 async function ghPostIssue(title,body,labels){
-  await fetch('https://api.github.com/repos/'+GH.owner+'/'+GH.repo+'/issues',{method:'POST',headers:{Authorization:'token '+GH.token,'Content-Type':'application/json'},body:JSON.stringify({title,body,labels:[labels]})});
+  await fetch('https://api.github.com/repos/'+GH.owner+'/'+GH.repo+'/issues',{method:'POST',headers:{Authorization:'token '+GH.token,'Content-Type':'application/json'}
+async function ghGetComments(issueNumber){
+  try{const r=await fetch('https://api.github.com/repos/'+GH.owner+'/'+GH.repo+'/issues/'+issueNumber+'/comments',{headers:{Authorization:'token '+GH.token}});
+  if(!r.ok)return[];const data=await r.json();return data.map(c=>({body:c.body,user:c.user?c.user.login:'匿名',time:c.created_at}))}catch(e){return[]}}
+async function ghPostComment(issueNumber,body){
+  await fetch('https://api.github.com/repos/'+GH.owner+'/'+GH.repo+'/issues/'+issueNumber+'/comments',{method:'POST',headers:{Authorization:'token '+GH.token,'Content-Type':'application/json'},body:JSON.stringify({body})});
+}
+,body:JSON.stringify({title,body,labels:[labels]})});
 }
 
 // ===== Journal (Synced via Issues) =====
@@ -1129,12 +1183,36 @@ async function renderMessages(){
     let data={name:'匿名',text:m.body,time:m.time};
     try{data=JSON.parse(m.body||'{}')}catch(err){}
     const name=m.title.replace('💬 ','')||data.name;
-    r+='<div class="sticky-note" style="background:'+colors[i%colors.length]+'"><div class="sticky-pin"></div><div class="sticky-name">'+name+'</div><div class="sticky-text">'+data.text+'</div><div class="sticky-time">'+data.time+'</div></div>';
+    const comments=await ghGetComments(m.id);
+    let replyHtml='';
+    if(comments.length){
+      replyHtml+='<div class="reply-list">';
+      comments.forEach(c=>{
+        const isOwner=c.user===GH.owner;
+        replyHtml+='<div class="reply-item"><span class="reply-name">'+(isOwner?'👑 '+c.user:c.user)+'</span>：'+c.body+'</div>';
+      });
+      replyHtml+='</div>';
+    }
+    r+='<div class="sticky-note" style="background:'+colors[i%colors.length]+'"><div class="sticky-pin"></div><div class="sticky-name">'+name+'</div><div class="sticky-text">'+data.text+'</div><div class="sticky-time">'+data.time+'</div>'+replyHtml+'<button class="reply-btn" onclick="toggleReply(this)">💬 回复</button><div class="reply-box"><input type="text" placeholder="写下回复…"><button onclick="sendReply(this,'+m.id+')">发送</button></div></div>';
   }
   container.innerHTML=r||'<div style="text-align:center;color:var(--text-muted);font-size:.85rem;padding:20px">💬 还没有留言，来做第一个吧！</div>';
 }
-
-// ===== Filmstrip (GitHub Synced) =====
+function toggleReply(btn){
+  const box=btn.nextElementSibling;
+  box.classList.toggle('show');
+  if(box.classList.contains('show'))box.querySelector('input').focus();
+}
+async function sendReply(btn,issueId){
+  const input=btn.previousElementSibling;
+  const text=input.value.trim();
+  if(!text){alert('请输入回复内容～');return}
+  const owner=document.getElementById('msgName');
+  const anon=document.getElementById('msgAnon');
+  const name=anon&&anon.checked?'匿名':(owner&&owner.value.trim()?owner.value.trim():'匿名');
+  await ghPostComment(issueId,name+'：'+text);
+  input.value='';
+  renderMessages();
+}// ===== Filmstrip (GitHub Synced) =====
 async function ghUploadImage(file,dateStr){
   const compressed=await new Promise(resolve=>{
     const reader=new FileReader();
