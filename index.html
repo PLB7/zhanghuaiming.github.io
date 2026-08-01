@@ -1510,10 +1510,18 @@ document.querySelectorAll('.vinyl-card').forEach(card=>{
 });
 
 // ===== Loading Screen =====
-window.addEventListener('load',()=>{
-  setTimeout(()=>document.getElementById('loadingScreen')?.classList.add('hide'),800);
-  setTimeout(()=>{const ls=document.getElementById('loadingScreen');if(ls)ls.style.display='none'},1800);
-});
+(function(){
+  // 立即隐藏：DOM 就绪就隐藏，不等图片等资源加载完
+  const hideLoading=function(){
+    const ls=document.getElementById('loadingScreen');
+    if(ls){ls.classList.add('hide');setTimeout(()=>{ls.style.display='none'},800);}
+  };
+  // DOM 就绪立即隐藏
+  if(document.readyState==='complete'||document.readyState==='interactive')setTimeout(hideLoading,300);
+  else document.addEventListener('DOMContentLoaded',()=>setTimeout(hideLoading,300));
+  // 兜底：无论任何情况，3 秒内一定隐藏
+  setTimeout(hideLoading,3000);
+})();
 
 // ===== Hero Particles =====
 (function(){
