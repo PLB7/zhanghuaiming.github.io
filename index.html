@@ -16,11 +16,10 @@ html{scroll-behavior:smooth}
 body.pink-theme .progress-bar{box-shadow:0 0 10px rgba(255,143,171,0.3)}
 /* ===== Custom Cursor ===== */
 body{cursor:default}
-.cursor-dot{position:fixed;width:28px;height:28px;border:2px solid var(--gold);border-radius:50%;pointer-events:none;z-index:99998;transition:transform .15s ease,width .3s,height .3s,background .3s;transform:translate(-50%,-50%);mix-blend-mode:difference;opacity:0.7}
-body.pink-theme .cursor-dot{border-color:var(--pink)}
-.cursor-dot.hover{width:42px;height:42px;background:rgba(201,168,76,0.08);border-width:2.5px}
-body.pink-theme .cursor-dot.hover{background:rgba(255,143,171,0.12)}
-@media(hover:none){.cursor-dot{display:none}}
+.cursor-particle{position:fixed;width:6px;height:6px;border-radius:50%;background:var(--gold);pointer-events:none;z-index:99998;transform:translate(-50%,-50%);animation:particleFade .9s ease-out forwards;opacity:.9}
+body.pink-theme .cursor-particle{background:var(--pink)}
+@keyframes particleFade{0%{transform:translate(-50%,-50%) scale(1);opacity:.9}100%{transform:translate(-50%,-50%) scale(.1) translateY(-12px);opacity:0}}
+@media(hover:none){.cursor-particle{display:none}}
 
 /* Desktop pet removed */
 @media(max-width:768px){.pet-container{width:70px;height:100px;bottom:80px;right:16px}.pet-sprite{width:70px;height:70px}.pet-speech{font-size:.7rem;max-width:160px;bottom:75px}}
@@ -421,7 +420,7 @@ body.pink-theme .custom-inputs input:focus,body.pink-theme .custom-inputs textar
 </div>
 <div class="hearts-container" id="heartsContainer"></div>
 <div class="progress-bar" id="progressBar"></div>
-<div class="cursor-dot" id="cursorDot"></div>
+
 <div class="copy-toast" id="copyToast">✅ 已复制</div>
 <button class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:"smooth"})">↑</button>
 <button class="music-toggle" id="musicToggle" onclick="toggleMusic()">🔇</button>
@@ -1324,14 +1323,29 @@ window.addEventListener('scroll',()=>{
   bar.style.width=(h>0?(window.scrollY/h*100):0)+'%';
 });
 
-// ===== Custom Cursor =====
+// ===== Golden Particle Cursor Trail =====
 (function(){
-  const dot=document.getElementById('cursorDot');
-  if(!dot||matchMedia('(hover:none)').matches)return;
-  document.addEventListener('mousemove',e=>{dot.style.left=e.clientX+'px';dot.style.top=e.clientY+'px'});
-  document.querySelectorAll('a,button,.vinyl-card,.wechat-article,.project-toggle,.food-chip,.skill-card,.about-highlight').forEach(el=>{
-    el.addEventListener('mouseenter',()=>dot.classList.add('hover'));
-    el.addEventListener('mouseleave',()=>dot.classList.remove('hover'));
+  if(matchMedia('(hover:none)').matches)return;
+  let lastX=0,lastY=0,lastTime=0;
+  document.addEventListener('mousemove',e=>{
+    const now=Date.now();
+    const dx=e.clientX-lastX,dy=e.clientY-lastY;
+    const dist=Math.sqrt(dx*dx+dy*dy);
+    // 生成粒子：按移动距离控制密度，避免过多
+    if(now-lastTime>25&&dist>3){
+      const p=document.createElement('div');
+      p.className='cursor-particle';
+      p.style.left=e.clientX+'px';
+      p.style.top=e.clientY+'px';
+      // 粒子大小随机 4-8px
+      const s=4+Math.random()*4;
+      p.style.width=s+'px';p.style.height=s+'px';
+      // 随机渐隐时长
+      p.style.animationDuration=(0.6+Math.random()*0.6)+'s';
+      document.body.appendChild(p);
+      setTimeout(()=>p.remove(),1200);
+      lastX=e.clientX;lastY=e.clientY;lastTime=now;
+    }
   });
 })();
 
