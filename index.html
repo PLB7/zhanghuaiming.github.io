@@ -1111,14 +1111,13 @@ async function ghGetIssues(label){
   try{const r=await fetch('https://api.github.com/repos/'+GH.owner+'/'+GH.repo+'/issues?state=all&per_page=100&labels='+label,{headers:{Authorization:'token '+GH.token}});
   if(!r.ok){console.log('GitHub API 读取失败: '+r.status+' '+r.statusText);return[]}const data=await r.json();return data.map(i=>({title:i.title,body:i.body,time:i.created_at,id:i.number}))}catch(e){console.log('GitHub API 读取异常: '+e.message);return[]}}
 async function ghPostIssue(title,body,labels){
-  await fetch('https://api.github.com/repos/'+GH.owner+'/'+GH.repo+'/issues',{method:'POST',headers:{Authorization:'token '+GH.token,'Content-Type':'application/json'}
+  await fetch('https://api.github.com/repos/'+GH.owner+'/'+GH.repo+'/issues',{method:'POST',headers:{Authorization:'token '+GH.token,'Content-Type':'application/json'},body:JSON.stringify({title,body,labels:[labels]})});
+}
 async function ghGetComments(issueNumber){
   try{const r=await fetch('https://api.github.com/repos/'+GH.owner+'/'+GH.repo+'/issues/'+issueNumber+'/comments',{headers:{Authorization:'token '+GH.token}});
   if(!r.ok)return[];const data=await r.json();return data.map(c=>({body:c.body,user:c.user?c.user.login:'匿名',time:c.created_at}))}catch(e){return[]}}
 async function ghPostComment(issueNumber,body){
   await fetch('https://api.github.com/repos/'+GH.owner+'/'+GH.repo+'/issues/'+issueNumber+'/comments',{method:'POST',headers:{Authorization:'token '+GH.token,'Content-Type':'application/json'},body:JSON.stringify({body})});
-}
-,body:JSON.stringify({title,body,labels:[labels]})});
 }
 
 // ===== Journal (Synced via Issues) =====
